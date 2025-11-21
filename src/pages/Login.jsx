@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { User, Lock, ArrowRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 export default function Login({ onSwitchToSignUp }) {
     const [email, setEmail] = useState('');
@@ -8,9 +9,10 @@ export default function Login({ onSwitchToSignUp }) {
     const [error, setError] = useState('');
     const { login } = useAuth();
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        const result = login(email, password);
+        setError('');
+        const result = await login(email, password);
         if (!result.success) {
             setError(result.error);
         }
@@ -65,12 +67,18 @@ export default function Login({ onSwitchToSignUp }) {
             </form>
 
             <div className="mt-8 text-center">
-                <p className="text-gray-500">
-                    ¿No tienes cuenta?{' '}
-                    <button onClick={onSwitchToSignUp} className="text-primary-600 font-semibold hover:underline">
-                        Regístrate
-                    </button>
+                <p className="mt-8 text-center text-sm text-gray-600">
+                    ¿No tienes una cuenta?{' '}
+                    <Link to="/signup" className="font-semibold text-primary-600 hover:text-primary-500">
+                        Regístrate aquí
+                    </Link>
                 </p>
+
+                <div className="mt-8 pt-6 border-t border-gray-100 text-center">
+                    <Link to="/worker" className="text-xs text-gray-400 hover:text-gray-600 transition-colors">
+                        Acceso Personal (Cuadrillas)
+                    </Link>
+                </div>
             </div>
         </div>
     );

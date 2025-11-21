@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
+import { signUpWithEmail, signInWithEmail, signOutUser, onAuthChange } from '../services/authService';
 
 const AuthContext = createContext();
 
@@ -7,49 +8,49 @@ export function AuthProvider({ children }) {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const storedUser = localStorage.getItem('ags_user');
-        if (storedUser) {
-            setUser(JSON.parse(storedUser));
-        }
-        setLoading(false);
+        // Suscribirse a cambios en el estado de autenticación
+        const unsubscribe = onAuthChange((userData) => {
+            setUser(userData);
+            setLoading(false);
+        });
+
+        // Cleanup: desuscribirse cuando el componente se desmonte
+        return () => unsubscribe();
     }, []);
 
-    const login = (email, password) => {
-        // Simulate login - in a real app, check against DB
-        const storedUsers = JSON.parse(localStorage.getItem('ags_users') || '[]');
-        const foundUser = storedUsers.find(u => u.email === email && u.password === password);
-
-        if (foundUser) {
-            const { password, ...userWithoutPass } = foundUser;
-            setUser(userWithoutPass);
-            localStorage.setItem('ags_user', JSON.stringify(userWithoutPass));
-            return { success: true };
+    const login = async (email, password) => {
+        try {
+            const result = await signInWithEmail(email, password);
+            if (result.success) {
+                setUser(result.user);
+            }
+            return result;
+        } catch (error) {
+            console.error('Error en login:', error);
+            return { success: false, error: 'Error al iniciar sesión' };
         }
-        return { success: false, error: 'Credenciales inválidas' };
     };
 
-    const signup = (name, email, password) => {
-        const storedUsers = JSON.parse(localStorage.getItem('ags_users') || '[]');
-
-        if (storedUsers.find(u => u.email === email)) {
-            return { success: false, error: 'El correo ya está registrado' };
+    const signup = async (name, email, password) => {
+        try {
+            const result = await signUpWithEmail(name, email, password);
+            if (result.success) {
+                setUser(result.user);
+            }
+            return result;
+        } catch (error) {
+            console.error('Error en signup:', error);
+            return { success: false, error: 'Error al crear la cuenta' };
         }
-
-        const newUser = { name, email, password, id: Date.now() };
-        storedUsers.push(newUser);
-        localStorage.setItem('ags_users', JSON.stringify(storedUsers));
-
-        // Auto login after signup
-        const { password: _, ...userWithoutPass } = newUser;
-        setUser(userWithoutPass);
-        localStorage.setItem('ags_user', JSON.stringify(userWithoutPass));
-
-        return { success: true };
     };
 
-    const logout = () => {
-        setUser(null);
-        localStorage.removeItem('ags_user');
+    const logout = async () => {
+        try {
+            await signOutUser();
+            setUser(null);
+        } catch (error) {
+            console.error('Error en logout:', error);
+        }
     };
 
     return (
@@ -60,3 +61,4 @@ export function AuthProvider({ children }) {
 }
 
 export const useAuth = () => useContext(AuthContext);
+
