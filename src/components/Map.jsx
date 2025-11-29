@@ -1,4 +1,4 @@
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import { useEffect, useState } from 'react';
@@ -55,15 +55,29 @@ function LocationMarker() {
     );
 }
 
-export default function MapView({ center = [21.8853, -102.2916], zoom = 13 }) { // Aguascalientes coords
+function MapMoveTracker({ onMapMove }) {
+    const map = useMapEvents({
+        moveend: () => {
+            const center = map.getCenter();
+            if (onMapMove) {
+                onMapMove({ lat: center.lat, lng: center.lng });
+            }
+        },
+    });
+
+    return null;
+}
+
+export default function MapView({ center = [21.8853, -102.2916], zoom = 13, onMapMove }) { // Aguascalientes coords
     return (
         <div className="h-[300px] w-full rounded-xl overflow-hidden shadow-inner border border-gray-200 relative z-0">
-            <MapContainer center={center} zoom={zoom} scrollWheelZoom={false} style={{ height: '100%', width: '100%' }}>
+            <MapContainer center={center} zoom={zoom} scrollWheelZoom={true} style={{ height: '100%', width: '100%' }}>
                 <TileLayer
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 />
                 <LocationMarker />
+                {onMapMove && <MapMoveTracker onMapMove={onMapMove} />}
             </MapContainer>
         </div>
     );

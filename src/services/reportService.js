@@ -20,7 +20,7 @@ import { db } from '../firebase';
  */
 export const createReport = async (reportData) => {
     try {
-        const { userId, userName, category, location, description, imageUrl } = reportData;
+        const { userId, userName, category, location, address, description, imageUrl } = reportData;
 
         // Validar datos requeridos
         if (!userId || !category || !location || !description) {
@@ -41,7 +41,8 @@ export const createReport = async (reportData) => {
             location: geoPoint,
             locationDetails: {
                 lat: location.lat,
-                lng: location.lng
+                lng: location.lng,
+                address: address || ''
             },
             description,
             imageUrls: imageUrl ? [imageUrl] : [],
@@ -290,3 +291,80 @@ export const getUserReportStats = async (userId) => {
         };
     }
 };
+
+/**
+ * Eliminar un reporte (solo el propietario puede eliminarlo)
+ * @param {string} reportId - ID del reporte
+ * @param {string} userId - ID del usuario que intenta eliminar
+ * @returns {Promise<Object>} Resultado de la operación
+ */
+export const deleteReport = async (reportId, userId) => {
+    try {
+        // Primero verificar que el reporte pertenece al usuario
+        const reportRef = doc(db, 'reports', reportId);
+        const reportSnap = await getDocs(query(collection(db, 'reports'), where('__name__', '==', reportId)));
+
+        if (reportSnap.empty) {
+            throw new Error('Reporte no encontrado');
+        }
+
+        const reportData = reportSnap.docs[0].data();
+
+        if (reportData.userId !== userId) {
+            throw new Error('No tienes permiso para eliminar este reporte');
+        }
+
+        // Eliminar el reporte
+        await deleteDoc(reportRef);
+
+        return {
+            success: true,
+            message: 'Reporte eliminado exitosamente'
+        };
+    } catch (error) {
+        console.error('Error al eliminar reporte:', error);
+        return {
+            success: false,
+            error: error.message || 'Error al eliminar el reporte'
+        };
+    }
+};
+
+/**
+ * Limpiar reportes resueltos con más de 48 horas
+ * @returns {Promise<Object>} Resultado de la operación
+ */
+export const cleanupOldResolvedReports = async () => {
+    try {
+        const fortyEightHoursAgo = new Date();
+        fortyEightHoursAgo.setHours(fortyEightHoursAgo.getHours() - 48);
+
+        const q = query(
+            collection(db, 'reports'),
+            where('status', '==', 'Resuelto'),
+            where('updatedAt', '<', Timestamp.fromDate(fortyEightHoursAgo))
+        );
+
+        const querySnapshot = await getDocs(q);
+        const deletePromises = [];
+
+        querySnapshot.forEach((docSnap) => {
+            deletePromises.push(deleteDoc(doc(db, 'reports', docSnap.id)));
+        });
+
+        await Promise.all(deletePromises);
+
+        return {
+            success: true,
+            deletedCount: querySnapshot.size,
+            message: `Se eliminaron ${querySnapshot.size} reportes resueltos antiguos`
+        };
+    } catch (error) {
+        console.error('Error al limpiar reportes antiguos:', error);
+        return {
+            success: false,
+            error: error.message || 'Error al limpiar reportes'
+        };
+    }
+};
+

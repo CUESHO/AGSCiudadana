@@ -1,20 +1,25 @@
 import { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route } from 'react-router-dom';
 import Layout from './components/Layout';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import SignUp from './pages/SignUp';
 import NewReport from './pages/NewReport';
+import MyReports from './pages/MyReports';
+import Notifications from './pages/Notifications';
 import Profile from './pages/Profile';
 import WorkerDashboard from './pages/WorkerDashboard';
 import SplashScreen from './components/SplashScreen';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { ToastProvider, useToast } from './context/ToastContext';
+import { NotificationProvider } from './context/NotificationContext';
 
 // Componente interno para manejar la lógica de autenticación y splash
 function AppContent() {
     const [activeTab, setActiveTab] = useState('home');
     const [showSplash, setShowSplash] = useState(true);
     const { user, loading } = useAuth();
+    const { showToast } = useToast();
 
     if (showSplash) {
         return <SplashScreen onComplete={() => setShowSplash(false)} />;
@@ -38,11 +43,13 @@ function AppContent() {
     return (
         <Layout activeTab={activeTab} setActiveTab={setActiveTab}>
             {activeTab === 'home' && <Home />}
+            {activeTab === 'myreports' && <MyReports />}
+            {activeTab === 'notifications' && <Notifications />}
             {activeTab === 'report' && (
                 <NewReport
                     onCancel={() => setActiveTab('home')}
                     onSuccess={() => {
-                        alert('¡Reporte enviado con éxito!');
+                        showToast('¡Reporte enviado con éxito!', 'success');
                         setActiveTab('home');
                     }}
                 />
@@ -55,9 +62,13 @@ function AppContent() {
 export default function App() {
     return (
         <AuthProvider>
-            <Router>
-                <AppContent />
-            </Router>
+            <ToastProvider>
+                <NotificationProvider>
+                    <Router>
+                        <AppContent />
+                    </Router>
+                </NotificationProvider>
+            </ToastProvider>
         </AuthProvider>
     );
 }

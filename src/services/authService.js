@@ -8,8 +8,8 @@ import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { auth, db } from '../firebase';
 
 /**
- * Crear una nueva cuenta de usuario con email y contraseña
- * También crea un documento de usuario en Firestore con información adicional
+ * Crear una nueva cuenta de usuario con email y contraseña.
+ * También crea un documento de usuario en Firestore con información adicional.
  */
 export const signUpWithEmail = async (name, email, password) => {
     try {
@@ -20,8 +20,8 @@ export const signUpWithEmail = async (name, email, password) => {
         // Crear documento de usuario en Firestore con información adicional
         await setDoc(doc(db, 'users', user.uid), {
             uid: user.uid,
-            name: name,
-            email: email,
+            name,
+            email,
             createdAt: new Date().toISOString(),
             photoURL: null
         });
@@ -30,8 +30,8 @@ export const signUpWithEmail = async (name, email, password) => {
             success: true,
             user: {
                 uid: user.uid,
-                name: name,
-                email: email
+                name,
+                email
             }
         };
     } catch (error) {
@@ -52,7 +52,7 @@ export const signUpWithEmail = async (name, email, password) => {
 };
 
 /**
- * Iniciar sesión con email y contraseña
+ * Iniciar sesión con email y contraseña.
  */
 export const signInWithEmail = async (email, password) => {
     try {
@@ -89,7 +89,7 @@ export const signInWithEmail = async (email, password) => {
 };
 
 /**
- * Cerrar sesión
+ * Cerrar sesión.
  */
 export const signOutUser = async () => {
     try {
@@ -102,14 +102,14 @@ export const signOutUser = async () => {
 };
 
 /**
- * Obtener el usuario actual autenticado
+ * Obtener el usuario actual autenticado.
  */
 export const getCurrentUser = () => {
     return auth.currentUser;
 };
 
 /**
- * Listener para cambios en el estado de autenticación
+ * Listener para cambios en el estado de autenticación.
  * @param {Function} callback - Función que se ejecuta cuando cambia el estado de auth
  */
 export const onAuthChange = (callback) => {

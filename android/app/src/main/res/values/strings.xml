@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">AGS Ciudadana Dev</string>
+    <string name="title_activity_main">AGSCiudadana</string>
+    <string name="package_name">com.agsciudadana.app</string>
+    <string name="custom_url_scheme">com.agsciudadana.app</string>
+</resources>

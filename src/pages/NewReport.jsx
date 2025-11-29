@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { AlertTriangle, Lightbulb, ShieldAlert, Droplets, Trash2, MapPin, Camera, ArrowLeft, CheckCircle } from 'lucide-react';
+import { AlertTriangle, Lightbulb, Droplets, Trash2, ShieldAlert, MapPin, Camera, ArrowLeft, CheckCircle } from 'lucide-react';
 import MapView from '../components/Map';
 import { useAuth } from '../context/AuthContext';
 import { createReport } from '../services/reportService';
@@ -16,11 +16,12 @@ const CATEGORIES = [
 export default function NewReport({ onCancel, onSuccess }) {
     const { user } = useAuth();
     const [step, setStep] = useState(1); // 1: Category, 2: Location, 3: Details
-    const [data, setData] = useState({ category: null, location: null, description: '', image: null });
+    const [data, setData] = useState({ category: null, location: null, address: '', description: '', image: null });
     const [imageFile, setImageFile] = useState(null);
     const [imagePreview, setImagePreview] = useState(null);
     const [uploading, setUploading] = useState(false);
     const [error, setError] = useState('');
+    const [mapCenter, setMapCenter] = useState({ lat: 21.8853, lng: -102.2916 });
 
     const handleCategorySelect = (cat) => {
         setData({ ...data, category: cat });
@@ -28,9 +29,13 @@ export default function NewReport({ onCancel, onSuccess }) {
     };
 
     const handleLocationConfirm = () => {
-        // In a real app, we'd get the actual coords from the map center
-        setData({ ...data, location: { lat: 21.8853, lng: -102.2916 } });
+        // Guardar las coordenadas del centro del mapa
+        setData({ ...data, location: mapCenter });
         setStep(3);
+    };
+
+    const handleMapMove = (newCenter) => {
+        setMapCenter(newCenter);
     };
 
     const handleImageSelect = (e) => {
@@ -69,6 +74,7 @@ export default function NewReport({ onCancel, onSuccess }) {
                 userName: user.name,
                 category: data.category,
                 location: data.location,
+                address: data.address,
                 description: data.description,
                 imageUrl: imageUrl
             };
@@ -97,7 +103,7 @@ export default function NewReport({ onCancel, onSuccess }) {
             {/* Header */}
             <div className="p-4 border-b border-gray-100 flex items-center gap-3">
                 {step > 1 && (
-                    <button onClick={() => setStep(step - 1)} className="p-1 -ml-2 text-gray-500">
+                    <button onClick={() => setStep(step - 1)} className="p-1 -ml-2 text-gray-500 btn-press">
                         <ArrowLeft size={24} />
                     </button>
                 )}
@@ -118,7 +124,7 @@ export default function NewReport({ onCancel, onSuccess }) {
                             <button
                                 key={cat.id}
                                 onClick={() => handleCategorySelect(cat)}
-                                className="flex flex-col items-center justify-center p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all bg-white active:scale-95"
+                                className="flex flex-col items-center justify-center p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all bg-white btn-press"
                             >
                                 <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-3 ${cat.color}`}>
                                     <cat.icon size={32} />
@@ -133,11 +139,19 @@ export default function NewReport({ onCancel, onSuccess }) {
                 {step === 2 && (
                     <div className="h-full flex flex-col">
                         <div className="flex-1 rounded-xl overflow-hidden border border-gray-200 relative mb-4">
-                            <MapView />
+                            <MapView onMapMove={handleMapMove} />
                             <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-[9999]">
                                 <MapPin size={48} className="text-primary-600 -mt-12 drop-shadow-lg" fill="currentColor" />
                             </div>
                         </div>
+
+                        {/* Coordenadas actuales */}
+                        <div className="bg-gray-50 p-3 rounded-xl text-xs text-gray-600 mb-3 border border-gray-200">
+                            <p className="font-semibold text-gray-800 mb-1">Coordenadas:</p>
+                            <p className="font-mono">Latitud: {mapCenter.lat.toFixed(6)}</p>
+                            <p className="font-mono">Longitud: {mapCenter.lng.toFixed(6)}</p>
+                        </div>
+
                         <div className="bg-blue-50 p-4 rounded-xl text-sm text-blue-800 mb-4">
                             <p className="flex gap-2">
                                 <MapPin size={16} className="shrink-0 mt-0.5" />
@@ -146,7 +160,7 @@ export default function NewReport({ onCancel, onSuccess }) {
                         </div>
                         <button
                             onClick={handleLocationConfirm}
-                            className="w-full bg-primary-600 text-white py-3 rounded-xl font-semibold shadow-lg active:scale-95 transition-transform"
+                            className="w-full bg-primary-600 text-white py-3 rounded-xl font-semibold shadow-lg btn-press"
                         >
                             Confirmar Ubicación
                         </button>
@@ -166,11 +180,36 @@ export default function NewReport({ onCancel, onSuccess }) {
                             </div>
                         </div>
 
+                        {/* Coordenadas y Dirección */}
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Descripción</label>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                <MapPin size={16} className="inline mr-1" />
+                                Ubicación
+                            </label>
+                            <div className="space-y-3">
+                                {/* Dirección */}
+                                <input
+                                    type="text"
+                                    className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500"
+                                    placeholder="Ej: Av. Insurgentes Sur 123, Roma Norte"
+                                    value={data.address}
+                                    onChange={(e) => setData({ ...data, address: e.target.value })}
+                                    required
+                                />
+                                {/* Coordenadas */}
+                                <div className="bg-gray-50 p-3 rounded-xl text-xs text-gray-600 border border-gray-200">
+                                    <p className="font-semibold text-gray-800 mb-1">Coordenadas capturadas:</p>
+                                    <p className="font-mono">Lat: {data.location?.lat.toFixed(6) || '0.000000'}</p>
+                                    <p className="font-mono">Lng: {data.location?.lng.toFixed(6) || '0.000000'}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Descripción del Problema</label>
                             <textarea
                                 className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 h-32 resize-none"
-                                placeholder="Describe el problema..."
+                                placeholder="Describe el problema en detalle..."
                                 value={data.description}
                                 onChange={(e) => setData({ ...data, description: e.target.value })}
                                 required
@@ -188,13 +227,13 @@ export default function NewReport({ onCancel, onSuccess }) {
                                             setImageFile(null);
                                             setImagePreview(null);
                                         }}
-                                        className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-2 shadow-lg hover:bg-red-600"
+                                        className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-2 shadow-lg hover:bg-red-600 btn-press"
                                     >
                                         ✕
                                     </button>
                                 </div>
                             ) : (
-                                <label className="w-full h-32 border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center text-gray-400 hover:bg-gray-50 transition-colors cursor-pointer">
+                                <label className="w-full h-32 border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center text-gray-400 hover:bg-gray-50 transition-colors cursor-pointer btn-press">
                                     <Camera size={32} className="mb-2" />
                                     <span className="text-sm">Tomar foto o subir imagen</span>
                                     <input
@@ -216,7 +255,7 @@ export default function NewReport({ onCancel, onSuccess }) {
                         <button
                             type="submit"
                             disabled={uploading}
-                            className="w-full bg-primary-600 text-white py-3 rounded-xl font-semibold shadow-lg active:scale-95 transition-transform flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="w-full bg-primary-600 text-white py-3 rounded-xl font-semibold shadow-lg btn-press flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {uploading ? (
                                 <>

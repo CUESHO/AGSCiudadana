@@ -1,37 +1,26 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import { VitePWA } from 'vite-plugin-pwa'
+// import { VitePWA } from 'vite-plugin-pwa' // Disabled during development
 
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
     react(),
-    VitePWA({
-      registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
-      manifest: {
-        name: 'AGS Ciudadana',
-        short_name: 'AGSCiudadana',
-        description: 'Reporte de problemas urbanos en Aguascalientes',
-        theme_color: '#ffffff',
-        background_color: '#ffffff',
-        display: 'standalone',
-        icons: [
-          {
-            src: 'logo.jpg', // Using the logo we have for now
-            sizes: '192x192',
-            type: 'image/jpeg'
-          },
-          {
-            src: 'logo.jpg',
-            sizes: '512x512',
-            type: 'image/jpeg'
-          }
-        ]
-      }
-    })
+    // PWA disabled during development to prevent caching issues
+    // VitePWA({...})
   ],
   server: {
     host: true
+  },
+  build: {
+    // Add timestamp to force cache bust
+    rollupOptions: {
+      output: {
+        entryFileNames: `assets/[name]-${Date.now()}.js`,
+        chunkFileNames: `assets/[name]-${Date.now()}.js`,
+        assetFileNames: `assets/[name]-${Date.now()}.[ext]`
+      }
+    }
   }
 })
+

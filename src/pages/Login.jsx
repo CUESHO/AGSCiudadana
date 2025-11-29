@@ -21,9 +21,10 @@ export default function Login({ onSwitchToSignUp }) {
     return (
         <div className="min-h-screen bg-white p-6 flex flex-col justify-center">
             <div className="mb-10 text-center">
-                <img src="/logo.jpg" alt="Logo" className="w-24 h-24 mx-auto mb-4 object-contain" />
+                <img src="/logo.png" alt="Logo" className="w-24 h-24 mx-auto mb-4 object-contain" />
                 <h1 className="text-2xl font-bold text-gray-900">Bienvenido de nuevo</h1>
                 <p className="text-gray-500">Ingresa a tu cuenta para continuar</p>
+                <p className="mt-2 text-xs text-gray-400">v1.4.3 - Debug</p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
