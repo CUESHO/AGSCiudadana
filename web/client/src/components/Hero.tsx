@@ -49,8 +49,8 @@ export default function Hero() {
             <div className="flex items-center gap-4 pt-4 text-sm font-medium text-muted-foreground">
               <div className="flex -space-x-2">
                 {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className="w-8 h-8 rounded-full border-2 border-white bg-gray-200 flex items-center justify-center overflow-hidden">
-                    <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${i}`} alt="User" />
+                  <div key={i} className="w-8 h-8 rounded-full border-2 border-white bg-primary/20 flex items-center justify-center overflow-hidden font-bold text-primary text-xs">
+                    {i}
                   </div>
                 ))}
               </div>

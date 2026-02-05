@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { auth } from "@/lib/firebase";
 import { useLocation, Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,13 +26,8 @@ export default function Login() {
     setIsSubmitting(false);
 
     if (result.success) {
-      if (auth.currentUser && !auth.currentUser.emailVerified) {
-        toast.info("Por favor verifica tu correo electrónico");
-        setLocation("/verify-email");
-      } else {
-        toast.success("¡Bienvenido de nuevo!");
-        setLocation("/");
-      }
+      toast.success("¡Bienvenido de nuevo!");
+      setLocation("/");
     } else {
       toast.error(result.error || "Error al iniciar sesión");
     }

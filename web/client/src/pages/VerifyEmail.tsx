@@ -4,7 +4,6 @@ import { Mail, ArrowRight, RefreshCw } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Link } from "wouter";
-import { auth } from "@/lib/firebase";
 
 export default function VerifyEmail() {
   const { user, resendVerificationEmail, logout } = useAuth();
@@ -23,12 +22,7 @@ export default function VerifyEmail() {
   };
 
   const checkVerification = async () => {
-    await auth.currentUser?.reload();
-    if (auth.currentUser?.emailVerified) {
-      window.location.href = "/";
-    } else {
-      toast.info("Aún no se ha verificado el correo. Por favor revisa tu bandeja de entrada.");
-    }
+    toast.info("Por favor revisa tu bandeja de entrada para verificar tu correo.");
   };
 
   if (!user) {

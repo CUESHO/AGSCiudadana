@@ -1,13 +1,7 @@
 import { Button } from "@/components/ui/button";
-import { Download, Smartphone, Lock } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
-import { Link } from "wouter";
-import { auth } from "@/lib/firebase";
+import { Download, Smartphone } from "lucide-react";
 
 export default function DownloadSection() {
-  const { user } = useAuth();
-  const isVerified = user && auth.currentUser?.emailVerified;
-
   return (
     <section id="download" className="py-24 bg-primary relative overflow-hidden text-white">
       {/* Background Pattern */}
@@ -30,27 +24,15 @@ export default function DownloadSection() {
           </p>
           
           <div className="flex flex-col sm:flex-row justify-center gap-4">
-            {isVerified ? (
-              <a href="/app-debug.apk" download>
-                <Button className="h-16 px-8 text-lg bg-foreground text-white hover:bg-foreground/90 border-2 border-foreground shadow-hard btn-press rounded-xl gap-3 w-full sm:w-auto">
-                  <Download size={24} />
-                  <div className="text-left">
-                    <div className="text-xs font-normal opacity-80">Descargar APK para</div>
-                    <div className="font-bold leading-none">Android</div>
-                  </div>
-                </Button>
-              </a>
-            ) : (
-              <Link href={user ? "/verify-email" : "/register"}>
-                <Button className="h-16 px-8 text-lg bg-foreground text-white hover:bg-foreground/90 border-2 border-foreground shadow-hard btn-press rounded-xl gap-3 w-full sm:w-auto">
-                  <Lock size={24} />
-                  <div className="text-left">
-                    <div className="text-xs font-normal opacity-80">Regístrate para</div>
-                    <div className="font-bold leading-none">Descargar</div>
-                  </div>
-                </Button>
-              </Link>
-            )}
+            <a href="/app-debug.apk" download>
+              <Button className="h-16 px-8 text-lg bg-foreground text-white hover:bg-foreground/90 border-2 border-foreground shadow-hard btn-press rounded-xl gap-3 w-full sm:w-auto">
+                <Download size={24} />
+                <div className="text-left">
+                  <div className="text-xs font-normal opacity-80">Descargar APK para</div>
+                  <div className="font-bold leading-none">Android</div>
+                </div>
+              </Button>
+            </a>
             
             <Button variant="outline" className="h-16 px-8 text-lg bg-white hover:bg-gray-50 border-2 border-foreground shadow-hard btn-press rounded-xl gap-3 w-full sm:w-auto opacity-50 cursor-not-allowed">
               <div className="text-left">
